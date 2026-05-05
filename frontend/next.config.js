@@ -2,7 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://13.217.101.32/:4000';
     return [{ source: '/api/:path*', destination: `${apiUrl}/api/:path*` }];
   },
 };
