@@ -13,7 +13,7 @@ import { globalLimiter, rateLimitHeaders } from './middleware/rateLimit';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '4000');
-const corsOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:3000').split(',').map(o => o.trim());
+const corsOrigins = (process.env.CORS_ORIGINS ?? 'http://13.217.101.32:3000').split(',').map(o => o.trim());
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
