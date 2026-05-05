@@ -5,7 +5,7 @@ import {
   TeamMetrics, EscalationRule, RoleId
 } from '../types';
 
-const BASE = '/api';
+const BASE = 'http://13.217.101.32:3000/api';
 
 async function req<T>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
