@@ -14,7 +14,7 @@ WORKDIR /app
 RUN addgroup -S workpulse && adduser -S workpulse -G workpulse
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+
 USER workpulse
 EXPOSE 3000
 ENV PORT 3000
