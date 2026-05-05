@@ -1,182 +1,174 @@
-# WorkPulse v2.0 — Milestone v1.0 Roadmap
+# Roadmap: WorkPulse v2.0
 
-## Milestone Goal
+## Overview
 
-Get WorkPulse fully running locally: backend starts cleanly, frontend builds without errors, all pages load with live data, and the complete user journey works end-to-end. Polish any UI gaps and verify the application feels production-quality.
+WorkPulse is substantially built — the fuzzy logic engines, ML pipeline, SHAP explainability, LSTM forecasting, RBAC, checkpoints, and audit log all exist in the backend. The frontend has all major pages (dashboard, member, collab, login, signup). This milestone gets everything running end-to-end: fix integration issues, wire live data to all pages, ensure the auth flow works correctly, and polish the UI to production quality.
 
----
+## Phases
 
-## Phase 1 — Backend Health & Local Dev Boot
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-**Goal:** Backend starts reliably in in-memory mode (no Postgres/Redis required), TypeScript compiles cleanly, and all API routes respond correctly.
+- [ ] **Phase 1: Backend Health** - Verify backend compiles and all API routes respond correctly in in-memory mode
+- [ ] **Phase 2: Frontend Build** - Fix TypeScript errors and ensure all pages compile cleanly
+- [ ] **Phase 3: Auth Flow** - Login/signup/logout and role-based routing work correctly
+- [ ] **Phase 4: Manager Dashboard** - Dashboard page loads live data from backend
+- [ ] **Phase 5: Member Dashboard** - Member page shows personal workload, SHAP, and forecast
+- [ ] **Phase 6: Collaboration Page** - Collab page shows team network, silos, and Brooks' Law
+- [ ] **Phase 7: Navigation & Polish** - Role-aware nav, loading states, consistent UI
+- [ ] **Phase 8: End-to-End Smoke Test** - Full user journey works, app is ready to demo
 
-**Plans:**
-1. Verify backend TypeScript compiles (`tsc --noEmit`) and fix any type errors
-2. Start backend in dev mode, confirm all core module imports resolve (fuzzy, ML, forecast, collab, alerts, rbac)
-3. Smoke-test all API endpoints: `/api/health`, `/api/team`, `/api/predict/all`, `/api/forecasts`, `/api/alerts`, `/api/rbac/roles`, `/api/checkpoints`, `/api/audit`
+## Phase Details
 
-**UAT Criteria:**
-- `npm run dev` in `/backend` starts without errors
-- `GET /api/health` returns `{ status: "operational" }` with rules count
-- `POST /api/predict/all` returns predictions for all 4 team members
-- `GET /api/alerts` returns array of active alert objects
-- No TypeScript compilation errors
+### Phase 1: Backend Health
+**Goal**: Backend starts reliably in in-memory mode (no Postgres/Redis required), TypeScript compiles cleanly, and all API routes respond correctly
+**Depends on**: Nothing (first phase)
+**Requirements**: Backend boot, API routes
+**Success Criteria** (what must be TRUE):
+  1. `npm run dev` in `/backend` starts without errors
+  2. `GET /api/health` returns `{ status: "operational" }` with rules count > 0
+  3. `POST /api/predict/all` returns predictions for all team members
+  4. `GET /api/alerts` returns array (not error)
+  5. No TypeScript compilation errors
+**Plans**: 3 plans
 
-**UI hint:** no
+Plans:
+- [ ] 01-01: Verify backend TypeScript compiles (`tsc --noEmit`) and fix any type errors
+- [ ] 01-02: Start backend in dev mode, confirm all core module imports resolve
+- [ ] 01-03: Smoke-test all API endpoints via curl/fetch
 
----
+### Phase 2: Frontend Build
+**Goal**: Frontend builds without TypeScript errors and all pages are importable
+**Depends on**: Phase 1
+**Requirements**: Frontend compilation, clean imports
+**Success Criteria** (what must be TRUE):
+  1. `npm run dev` in `/frontend` starts without compilation errors
+  2. No TypeScript errors in dashboard/member/collab/login/signup pages
+  3. All component imports resolve (Gauge, Sparkline, auth hooks)
+  4. Browser console shows no critical import errors on page load
+**Plans**: 3 plans
 
-## Phase 2 — Frontend Build & TypeScript Fixes
+Plans:
+- [ ] 02-01: Run `tsc --noEmit` in `/frontend` and fix all type errors
+- [ ] 02-02: Audit all import paths in pages — fix missing imports and broken directory artifacts
+- [ ] 02-03: Verify `next dev` starts and home page loads without errors
 
-**Goal:** Frontend builds without TypeScript errors and all pages are importable.
+### Phase 3: Auth Flow
+**Goal**: Login, signup, and logout work correctly. Route guards redirect unauthenticated users. Demo accounts land on correct dashboards.
+**Depends on**: Phase 2
+**Requirements**: Auth flow, role-based routing
+**Success Criteria** (what must be TRUE):
+  1. `sarah@workpulse.io` logs in → redirects to `/dashboard`
+  2. `alex@workpulse.io` logs in → redirects to `/member`
+  3. Signup completes and redirects to appropriate page
+  4. Logout clears session and redirects to `/login`
+  5. Unauthenticated users hitting `/dashboard` redirect to `/login`
+**Plans**: 3 plans
 
-**Plans:**
-1. Run `tsc --noEmit` in `/frontend` and fix all type errors
-2. Audit all `import` paths in pages (dashboard, member, collab, login, signup) — fix missing imports
-3. Fix broken directory artifacts: remove/rename stray `{backend` and `{login,signup,...}` dirs that may cause build issues
-4. Verify `next build` or `next dev` starts cleanly
+Plans:
+- [ ] 03-01: Audit AuthProvider wrapping in layout.tsx — ensure it covers all pages
+- [ ] 03-02: Verify login demo card selection + submit → correct redirect by role
+- [ ] 03-03: Implement route protection for dashboard/member/collab pages
 
-**UAT Criteria:**
-- `npm run dev` in `/frontend` starts without compilation errors
-- No red TypeScript errors in dashboard/member/collab/login/signup pages
-- All component imports resolve (Gauge, Sparkline, Dashboard component, auth hooks)
-- Browser console shows no critical import errors on page load
+### Phase 4: Manager Dashboard
+**Goal**: Dashboard page loads real data from the backend, all panels render correctly with no placeholder/empty states
+**Depends on**: Phase 3
+**Requirements**: Live data in dashboard, Gauge component, alerts panel
+**Success Criteria** (what must be TRUE):
+  1. Dashboard shows all team members with their workload scores from backend
+  2. Alert badges display real active alerts
+  3. Team metric summary cards show correct aggregated numbers (avg score, burnout count)
+  4. Gauge component renders with correct score values (0-100)
+  5. No "undefined" or NaN values visible in the UI
+**Plans**: 4 plans
 
-**UI hint:** no
+Plans:
+- [ ] 04-01: Wire `api.getTeam()` and `api.predictAll()` into dashboard — replace static data
+- [ ] 04-02: Wire `api.getAlerts()` and `api.getTeamMetrics()` into summary panels
+- [ ] 04-03: Wire `api.getAllForecasts()` and verify Gauge/Sparkline render correctly
+- [ ] 04-04: Wire `api.getFusionConfig()` + `api.updateFusionConfig()` into fusion config panel
 
----
+### Phase 5: Member Dashboard
+**Goal**: Member page shows the logged-in user's personal workload data, SHAP recommendations, and 7-day forecast
+**Depends on**: Phase 4
+**Requirements**: Personal workload view, SHAP recommendations, forecast sparkline
+**Success Criteria** (what must be TRUE):
+  1. Logged in as `alex@workpulse.io` → member page shows Alex's specific data
+  2. SHAP recommendations panel shows top contributing factors with explanations
+  3. Forecast sparkline shows 7 days of projected workload
+  4. Changing input sliders triggers a new prediction and updates the score display
+  5. Workload level badge (Optimal / Overloaded / Burnout Risk) updates correctly
+**Plans**: 3 plans
 
-## Phase 3 — Auth Flow & Page Routing
+Plans:
+- [ ] 05-01: Wire member page to identify current user's memberId via useAuth() and fetch personal data
+- [ ] 05-02: Render SHAP feature contributions as ranked recommendations list
+- [ ] 05-03: Wire input sliders to `api.updateInputs()` with live prediction refresh
 
-**Goal:** Login, signup, and logout work correctly. Route guards redirect unauthenticated users. Demo accounts land on correct dashboards.
+### Phase 6: Collaboration Page
+**Goal**: Collab page shows team collaboration network, knowledge silo detection, and Brooks' Law analysis
+**Depends on**: Phase 5
+**Requirements**: Collaboration network, silo detection, Brooks' Law panel
+**Success Criteria** (what must be TRUE):
+  1. Collab page loads and shows collaboration network/pairs data
+  2. Knowledge silo risk displayed for each team member
+  3. Selecting a member shows their collaboration impact score
+  4. Brooks' Law panel displays coordination overhead metrics
+  5. Page accessible to managers/team_leads, not members
+**Plans**: 3 plans
 
-**Plans:**
-1. Audit `AuthProvider` wrapping in `layout.tsx` — ensure it wraps all pages
-2. Verify login flow: select demo account → submit → redirect to `/dashboard` (manager/admin) or `/member` (member/team_lead)
-3. Verify signup flow: 2-step form → create account → redirect to appropriate dashboard
-4. Verify logout clears localStorage and redirects to `/login`
-5. Add route protection: unauthenticated users hitting `/dashboard` or `/member` redirect to `/login`
+Plans:
+- [ ] 06-01: Wire `api.getCollaborations()` and `api.getKnowledgeSilos()` to render collaboration data
+- [ ] 06-02: Wire `api.getCollabImpact(memberId)` for selected member impact
+- [ ] 06-03: Verify role-based access and Brooks' Law panel renders
 
-**UAT Criteria:**
-- Clicking a demo account card + "Sign in" redirects correctly based on role
-- Signup completes and redirects to correct page
-- Logout works and prevents re-accessing protected pages without login
-- `sarah@workpulse.io` → `/dashboard`, `alex@workpulse.io` → `/member`
+### Phase 7: Navigation & Polish
+**Goal**: Navigation shell works across all pages, UI is polished and consistent, no rough edges
+**Depends on**: Phase 6
+**Requirements**: Role-aware nav, loading states, consistent design system
+**Success Criteria** (what must be TRUE):
+  1. Nav links are role-aware (member can't see manager dashboard link)
+  2. All pages have consistent visual language (font, spacing, card styles)
+  3. Loading states appear while data fetches in-flight (spinner or skeleton)
+  4. Error states show gracefully when backend unavailable
+  5. Light theme looks premium and professional throughout
+**Plans**: 3 plans
 
-**UI hint:** yes
+Plans:
+- [ ] 07-01: Audit layout/nav component — implement role-aware link visibility
+- [ ] 07-02: Add loading skeletons and error boundaries to all async data fetches
+- [ ] 07-03: CSS audit — ensure design system tokens consistent across all pages
 
----
+### Phase 8: End-to-End Smoke Test
+**Goal**: Complete user journey works without errors, app is ready to demo
+**Depends on**: Phase 7
+**Requirements**: All flows working, in-memory fallback, checkpoint/audit verified
+**Success Criteria** (what must be TRUE):
+  1. All 4 demo accounts log in and see appropriate dashboards with live data
+  2. Backend starts in in-memory mode without external services
+  3. Checkpoint save + restore works without errors
+  4. Audit log populates on user actions
+  5. App can be demoed end-to-end without errors or empty states
+**Plans**: 3 plans
 
-## Phase 4 — Manager Dashboard — Live Data Integration
+Plans:
+- [ ] 08-01: Full E2E run — login as each demo account and verify correct page with data
+- [ ] 08-02: Verify in-memory mode — confirm graceful fallback when no Postgres/Redis
+- [ ] 08-03: Test checkpoint create/restore and audit log population
 
-**Goal:** Dashboard page loads real data from the backend, all panels render correctly with no placeholder/empty states.
+## Progress
 
-**Plans:**
-1. Wire `api.getTeam()` and `api.predictAll()` into dashboard page — replace any static/hardcoded data
-2. Wire `api.getAlerts()` into alerts panel
-3. Wire `api.getTeamMetrics()` into summary metric cards (avg score, burnout count, overloaded count)
-4. Wire `api.getAllForecasts()` into forecast panel
-5. Wire `api.getFusionConfig()` + `api.updateFusionConfig()` into fusion config panel (if present)
-6. Verify Gauge and Sparkline components render correctly with real prediction scores
+**Execution Order:**
+Phases execute in order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
-**UAT Criteria:**
-- Dashboard loads all 4 team members with their workload scores
-- Alert badges show real active alerts from backend
-- Team metric summary cards show correct aggregated numbers
-- Gauge component renders with correct score values (0-100)
-- No "undefined" or NaN values visible in the UI
-- Fusion config controls update predictions in real-time
-
-**UI hint:** yes
-
----
-
-## Phase 5 — Member Dashboard — Personal View Integration
-
-**Goal:** Member page shows the logged-in user's personal workload data, SHAP recommendations, and 7-day forecast.
-
-**Plans:**
-1. Wire member page to use `useAuth()` to identify the current user's `memberId`
-2. Fetch `api.getMember(memberId)` and `api.predictMember(memberId)` for personal data
-3. Render SHAP feature contributions (from prediction result) as a ranked list of recommendations
-4. Render 7-day workload forecast from `api.getForecast(memberId)` using Sparkline
-5. Wire input sliders (hours/week, task complexity, meetings, etc.) to `api.updateInputs()` with live prediction refresh
-
-**UAT Criteria:**
-- Logged-in as `alex@workpulse.io` → member page shows Alex's specific data
-- SHAP recommendations panel shows top contributing factors
-- Forecast sparkline shows 7 days of projected workload
-- Changing input sliders triggers a new prediction and updates the score display
-- Workload level badge (Optimal / Overloaded / Burnout Risk) updates correctly
-
-**UI hint:** yes
-
----
-
-## Phase 6 — Collaboration Page Integration
-
-**Goal:** Collab page shows team collaboration network, knowledge silo detection, and Brooks' Law analysis.
-
-**Plans:**
-1. Wire `api.getCollaborations()` to render collaboration pairs/network
-2. Wire `api.getKnowledgeSilos()` to render silo risk indicators per member
-3. Wire `api.getCollabImpact(memberId)` for selected member's collaboration impact score
-4. Ensure Brooks' Law coordination overhead display renders correctly
-5. Verify collab page is accessible from navigation for manager/team_lead roles
-
-**UAT Criteria:**
-- Collab page loads and shows collaboration network data
-- Knowledge silo risk is displayed for each team member
-- Selecting a member shows their collaboration impact score
-- Brooks' Law panel displays coordination overhead metrics
-- Page is accessible to managers and team leads, not members
-
-**UI hint:** yes
-
----
-
-## Phase 7 — Navigation, Layout & UI Polish
-
-**Goal:** Navigation shell works across all pages. UI is polished, consistent, and visually premium. No rough edges.
-
-**Plans:**
-1. Audit layout component — ensure nav links work for all roles (manager sees dashboard + collab + team; member sees only member view)
-2. Verify CSS design system is consistent across all pages (colors, typography, spacing from `globals.css`)
-3. Polish any visual gaps: empty states, loading skeletons, error boundaries
-4. Add loading states to all async data fetches (spinner or skeleton cards)
-5. Verify mobile/tablet layout is acceptable (no horizontal overflow, nav collapses if needed)
-
-**UAT Criteria:**
-- Nav links are role-aware (member can't navigate to manager dashboard)
-- All pages have consistent visual language (same font, spacing, card styles)
-- Loading states appear while data fetches in-flight
-- Error states show gracefully when backend is unavailable
-- No visual regressions — the light theme looks premium and professional
-
-**UI hint:** yes
-
----
-
-## Phase 8 — End-to-End Smoke Test & Final Fixes
-
-**Goal:** Complete user journey works without errors. App is ready to demo.
-
-**Plans:**
-1. Full E2E run: start backend → start frontend → login as each of 4 demo accounts → verify correct page renders with data
-2. Fix any remaining bugs or visual issues discovered in testing
-3. Verify in-memory mode: kill Postgres/Redis if running, restart backend, confirm graceful fallback
-4. Test checkpoint creation and restore flow from the dashboard
-5. Verify audit log populates on user actions
-
-**UAT Criteria:**
-- All 4 demo accounts can log in and see appropriate dashboards with live data
-- Backend starts cleanly in in-memory mode (no external services required)
-- Checkpoint save + restore works without errors
-- Audit log shows recent actions
-- App can be demoed end-to-end without hitting any errors or empty states
-
-**UI hint:** no
-
----
-
-*Milestone v1.0 | 8 phases | Created 2026-05-05*
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Backend Health | 0/3 | Not started | - |
+| 2. Frontend Build | 0/3 | Not started | - |
+| 3. Auth Flow | 0/3 | Not started | - |
+| 4. Manager Dashboard | 0/4 | Not started | - |
+| 5. Member Dashboard | 0/3 | Not started | - |
+| 6. Collaboration Page | 0/3 | Not started | - |
+| 7. Navigation & Polish | 0/3 | Not started | - |
+| 8. End-to-End Smoke Test | 0/3 | Not started | - |
